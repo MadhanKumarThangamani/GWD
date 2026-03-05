@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Guess the Employee</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+  <style>
+    :root{
+      --glass-bg: rgba(255,255,255,.14);
+      --glass-border: rgba(255,255,255,.22);
+      --shadow: 0 20px 60px rgba(0,0,0,.25);
+      --shadow-soft: 0 12px 30px rgba(0,0,0,.18);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.72);
+    }
+    body{
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 600px at 20% 20%, rgba(0, 163, 255, .35), transparent 60%),
+        radial-gradient(900px 500px at 80% 30%, rgba(255, 0, 140, .25), transparent 55%),
+        radial-gradient(900px 500px at 50% 90%, rgba(0, 255, 187, .22), transparent 60%),
+        linear-gradient(135deg, #0b1020, #070a13);
+      overflow-x: hidden;
+    }
+    .app-shell{ max-width: 860px; }
+    .glass{
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 22px;
+    }
+    .glass-soft{
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 18px;
+    }
+    .brand-pill{
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .4rem .7rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.18);
+    }
+    .muted{ color: var(--muted); }
+    .chip{
+      display:inline-flex; align-items:center; gap:.4rem;
+      padding:.35rem .6rem; border-radius:999px;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.16);
+      color: rgba(255,255,255,.85);
+      font-size: .9rem; user-select: none; white-space: nowrap;
+    }
+
+    .card-stage{ position: relative; min-height: 440px; }
+    .match-card{ transform-origin: center; animation: popIn .35s ease both; }
+    @keyframes popIn{ from{opacity:0;transform:translateY(10px) scale(.98);} to{opacity:1;transform:translateY(0) scale(1);} }
+    .fade-swap-out{ animation: swapOut .18s ease both; }
+    .fade-swap-in{ animation: swapIn .22s ease both; }
+    @keyframes swapOut{ from{opacity:1;transform:translateY(0) scale(1);} to{opacity:0;transform:translateY(-6px) scale(.99);} }
+    @keyframes swapIn{ from{opacity:0;transform:translateY(10px) scale(.99);} to{opacity:1;transform:translateY(0) scale(1);} }
+
+    .nav-btn{
+      width:48px;height:48px;border-radius:14px;display:grid;place-items:center;
+      border:1px solid rgba(255,255,255,.2);
+      background: rgba(255,255,255,.10);
+      color:white;
+      box-shadow:0 10px 20px rgba(0,0,0,.18);
+      transition: transform .15s ease, background .15s ease;
+      user-select:none; cursor:pointer;
+    }
+    .nav-btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.14); }
+    .nav-btn:active{ transform: translateY(0); }
+
+    .progress-wrap{ height:10px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);overflow:hidden; }
+    .progress-bar-glass{ height:100%;width:0%;background:linear-gradient(90deg, rgba(255,255,255,.75), rgba(255,255,255,.25));border-radius:999px;transition: width .25s ease; }
+
+    .form-select, .form-control{
+      background: rgba(255,255,255,.10) !important;
+      color:white !important;
+      border:1px solid rgba(255,255,255,.22) !important;
+      border-radius:14px !important;
+      box-shadow:none !important;
+    }
+    .form-select option{ color:#111; }
+
+    .btn-glass{
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.22);
+      background: rgba(255,255,255,.12);
+      color:white;
+      box-shadow:0 12px 22px rgba(0,0,0,.18);
+      transition: transform .15s ease, background .15s ease;
+    }
+    .btn-glass:hover{ transform: translateY(-1px); background: rgba(255,255,255,.16); color:white; }
+    .btn-glass:active{ transform: translateY(0); }
+    .btn-primary-glass{ background: rgba(255,255,255,.22); border: 1px solid rgba(255,255,255,.30); }
+
+    .toast-like{
+      position: fixed; left:50%; bottom:18px; transform:translateX(-50%);
+      z-index:1080; min-width:min(92vw,520px); display:none;
+    }
+    .spinner-border-sm{ vertical-align:-0.12em; }
+
+    .modal-content{
+      background: rgba(10, 14, 26, .78);
+      border: 1px solid rgba(255,255,255,.16);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      color: white;
+      border-radius: 18px;
+    }
+    .modal-header, .modal-footer{ border-color: rgba(255,255,255,.12); }
+
+    .leader-row{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      padding: .75rem .85rem;
+    }
+
+    @media (max-width:576px){
+      .card-stage{ min-height: 500px; }
+      .nav-btn{ width:44px;height:44px;border-radius:12px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container py-4 py-md-5 app-shell">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <div class="brand-pill">
+        <i class="bi bi-stars"></i>
+        <span class="fw-semibold">Guess the Employee</span>
+        <span class="muted">• 17 cards</span>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button id="viewLeaderboardBtnTop" class="btn btn-glass btn-sm">
+          <i class="bi bi-trophy me-1"></i> View Leaderboard
+        </button>
+        <button class="btn btn-glass btn-sm" data-bs-toggle="modal" data-bs-target="#howModal">
+          <i class="bi bi-info-circle me-1"></i> How it works
+        </button>
+      </div>
+    </div>
+
+    <div class="glass p-3 p-md-4">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <span class="chip"><i class="bi bi-card-text"></i> Card <span id="cardIndexText">1</span>/17</span>
+          <span class="chip"><i class="bi bi-check2-circle"></i> Selected <span id="selectedCountText">0</span>/17</span>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+          <div class="nav-btn" id="prevBtn" title="Previous"><i class="bi bi-chevron-left"></i></div>
+          <div class="nav-btn" id="nextBtn" title="Next"><i class="bi bi-chevron-right"></i></div>
+        </div>
+      </div>
+
+      <div class="progress-wrap mb-3">
+        <div class="progress-bar-glass" id="progressBar"></div>
+      </div>
+
+      <div class="glass-soft p-3 mb-3">
+        <label class="form-label fw-semibold mb-1">Name</label>
+        <input id="playerName" class="form-control" placeholder="Enter your name" maxlength="40" />
+        <div class="form-text muted">Each employee can be used only once (no duplicates).</div>
+      </div>
+
+      <div class="card-stage">
+        <div id="cardHost" class="match-card glass-soft p-3 p-md-4 h-100 d-flex flex-column justify-content-between"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast-like" id="toastWrap">
+    <div class="glass-soft p-3 d-flex justify-content-between align-items-start gap-2">
+      <div class="d-flex gap-2">
+        <i class="bi bi-bell"></i>
+        <div>
+          <div class="fw-semibold" id="toastTitle">Notice</div>
+          <div class="muted small" id="toastMsg">...</div>
+        </div>
+      </div>
+      <button class="btn btn-sm btn-glass" id="toastClose"><i class="bi bi-x"></i></button>
+    </div>
+  </div>
+
+  <!-- How Modal -->
+  <div class="modal fade" id="howModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-info-circle me-2"></i>How it works</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <ul class="mb-0">
+            <li>17 cards, each with a description.</li>
+            <li>Select the employee name that matches.</li>
+            <li><b>No duplicates:</b> once a name is used, it disappears from other dropdowns.</li>
+            <li>After selecting, it auto-moves to the next card.</li>
+            <li>Submit appears only after all are selected.</li>
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-glass" data-bs-dismiss="modal">Got it</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboard Modal -->
+  <div class="modal fade" id="leaderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-trophy me-2"></i>Leaderboard</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <div class="muted small">Sorted by score (desc), then earliest submission.</div>
+            <button class="btn btn-glass btn-sm" id="refreshLbBtn"><i class="bi bi-arrow-clockwise me-1"></i>Refresh</button>
+          </div>
+
+          <div id="lbLoading" class="muted d-flex align-items-center gap-2">
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Loading leaderboard...
+          </div>
+
+          <div id="lbError" class="d-none">
+            <div class="alert alert-warning mb-0" style="background: rgba(255,193,7,.12); border-color: rgba(255,193,7,.35); color: white;">
+              <div class="fw-semibold">Couldn’t load leaderboard query.</div>
+              <div class="small muted mt-1">
+                If Firestore shows “query requires an index”, create the composite index for:
+                <code class="text-white">score desc</code> + <code class="text-white">createdAt asc</code>.
+              </div>
+            </div>
+          </div>
+
+          <div id="lbList" class="d-flex flex-column gap-2 mt-2"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-glass" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      serverTimestamp,
+      query,
+      orderBy,
+      limit,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+    // === Firebase config ===
+      const firebaseConfig = {
+        apiKey: "AIzaSyBZkDG7c2-X2hcHVom6fR3OE20H4fvxD1M",
+        authDomain: "feedbackguru-28cd3.firebaseapp.com",
+        projectId: "feedbackguru-28cd3",
+        storageBucket: "feedbackguru-28cd3.firebasestorage.app",
+        messagingSenderId: "851289945198",
+        appId: "1:851289945198:web:922648f3f4016561e9227f",
+      };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // === Correct data ===
+    const correctPairs = [
+      ["Aishwarya P", "Our versatile singer with a melodious voice that can charm any room. Friendly, warm, and always spreading good vibes wherever she goes. 🎶"],
+      ["Akila Singaravelu", "One of our long-standing pillars who recently turned into a full-on health enthusiast, inspiring the younger crowd to stay fit and energetic. 💪"],
+      ["Arthy Gunasekaran", "Cool as a cucumber! Arthy’s cordial nature and level-headed thinking make her someone everyone enjoys working with. 😎"],
+      ["Atchaya", "Calm and composed on the outside, but quite a lively character when she’s with her gang!"],
+      ["Jeyaserandhini", "Street-smart, sharp, and a true go-getter. A wonderful catalyst who energizes and drives the young team forward. 🚀"],
+      ["Mahalakshmi", "Deeply focused on work and always getting things done. A little more mingling and the team would enjoy her even more!"],
+      ["Nithyalakshmi", "A true pillar of Gislen today… and who knows, perhaps the future Managing Director of the Gislen Group of Companies! 🌟"],
+      ["Pramiladevi", "A proud foodie and our very own vadai fan! A kind soul who enjoys life fully (and sometimes forgets to worry about health!)."],
+      ["Priyanka", "Proactive and thoughtful, though she keeps her circle small — a hidden powerhouse waiting to shine even more."],
+      ["Reshma S", "Stylish, graceful, and the nightingale of Gislen with a voice that can brighten any day. 🎤"],
+      ["Srividya V", "Quiet on the surface but bold at heart, with strong perseverance that speaks louder than words."],
+      ["Suvedha K", "Headstrong, determined, and a true go-getter who knows how to chase her goals."],
+      ["Vallirani Kamaraj", "Meticulous in work and humble in nature — a grounded soul everyone appreciates."],
+      ["Vanitha P", "Proactive, a true people person, and a sharp negotiator who can handle situations with ease. 🤝"],
+      ["Vanitha Venugopal", "An inspiring caretaker and the torchbearer of Gislen’s culture, always guiding and supporting the team."],
+      ["Vasundhara S K", "Calm and composed, but when it comes to achieving what she wants, she is a determined go-getter!"],
+      ["Yamuna", "Our dependable part-time contributor who quietly ensures things keep moving smoothly."]
+    ];
+
+    const EMPLOYEES = correctPairs.map(([n]) => n);
+    const cards = correctPairs.map(([name, text], i) => ({ id: `card_${i+1}`, text, correctName: name }));
+
+    // === Elements ===
+    const cardHost = document.getElementById("cardHost");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const selectedCountText = document.getElementById("selectedCountText");
+    const cardIndexText = document.getElementById("cardIndexText");
+    const progressBar = document.getElementById("progressBar");
+    const playerName = document.getElementById("playerName");
+
+    const viewLeaderboardBtnTop = document.getElementById("viewLeaderboardBtnTop");
+    const refreshLbBtn = document.getElementById("refreshLbBtn");
+
+    const toastWrap = document.getElementById("toastWrap");
+    const toastTitle = document.getElementById("toastTitle");
+    const toastMsg = document.getElementById("toastMsg");
+    const toastClose = document.getElementById("toastClose");
+
+    const leaderModalEl = document.getElementById("leaderModal");
+    const leaderModal = new bootstrap.Modal(leaderModalEl);
+    const lbLoading = document.getElementById("lbLoading");
+    const lbError = document.getElementById("lbError");
+    const lbList = document.getElementById("lbList");
+
+    // === State ===
+    const shuffled = shuffle([...cards]);
+    let idx = 0;
+    const selections = {}; // cardId -> employeeName
+
+    // Used names set (computed from selections)
+    function getUsedNames(exceptCardId) {
+      const used = new Set();
+      for (const [cid, name] of Object.entries(selections)) {
+        if (cid === exceptCardId) continue; // allow current card to keep its own selected name visible
+        if (name) used.add(name);
+      }
+      return used;
+    }
+
+    // Build options with duplicates removed
+    function buildOptionsHTML(currentCardId) {
+      const used = getUsedNames(currentCardId);
+      const currentSelected = selections[currentCardId] || "";
+      const options = EMPLOYEES
+        .filter(n => !used.has(n) || n === currentSelected) // keep current selection visible
+        .map(n => `<option value="${escapeAttr(n)}">${escapeHtml(n)}</option>`)
+        .join("");
+
+      return `<option value="">— Choose an employee —</option>${options}`;
+    }
+
+    function renderCard({ animate=true } = {}) {
+      const c = shuffled[idx];
+
+      const doRender = () => {
+        cardHost.innerHTML = `
+          <div>
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+              <div class="fw-semibold fs-5">Guess the Employee</div>
+              <div class="chip"><i class="bi bi-lightning-charge"></i> Match</div>
+            </div>
+
+            <div class="muted mb-3">Read the card text and pick the right employee.</div>
+
+            <div class="p-3 glass" style="border-radius: 18px; box-shadow: 0 18px 40px rgba(0,0,0,.18);">
+              <div class="fs-6 lh-base" style="white-space: pre-wrap;">${escapeHtml(c.text)}</div>
+            </div>
+
+            <div class="mt-3">
+              <label class="form-label fw-semibold mb-1">Select the employee for this card</label>
+              <select id="employeeSelect" class="form-select">
+                ${buildOptionsHTML(c.id)}
+              </select>
+              <div class="form-text muted">No duplicates — once a name is used, it disappears from other cards.</div>
+            </div>
+          </div>
+
+          <div class="mt-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <button id="clearThisBtn" class="btn btn-glass">
+              <i class="bi bi-eraser me-1"></i> Clear this card
+            </button>
+
+            <div class="d-flex align-items-center gap-2 ms-auto flex-wrap">
+              <span class="chip"><i class="bi bi-bookmark-check"></i> ${selections[c.id] ? "Selected" : "Not selected"}</span>
+              <button id="submitBtn" class="btn btn-glass btn-primary-glass d-none">
+                <span id="submitBtnText"><i class="bi bi-send me-1"></i> Submit</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="muted small mt-2" id="statusText">
+            Pick employees for all cards to enable Submit. (Results won’t be revealed.)
+          </div>
+        `;
+
+        const employeeSelect = document.getElementById("employeeSelect");
+        const clearThisBtn = document.getElementById("clearThisBtn");
+        const submitBtnEl = document.getElementById("submitBtn");
+        const submitBtnTextEl = document.getElementById("submitBtnText");
+
+        // Apply current selection
+        employeeSelect.value = selections[c.id] || "";
+
+        employeeSelect.addEventListener("change", async () => {
+          const val = employeeSelect.value;
+
+          // If user picked a name already used elsewhere, block (should be impossible, but safe)
+          const used = getUsedNames(c.id);
+          if (val && used.has(val)) {
+            employeeSelect.value = selections[c.id] || "";
+            showToast("Already used", "That employee is already assigned to another card.");
+            return;
+          }
+
+          if (!val) delete selections[c.id];
+          else selections[c.id] = val;
+
+          // Re-render (so dropdown options refresh globally)
+          syncMeta();
+          renderCard({ animate:false });
+
+          // Auto move next after selection (if not last)
+          if (val && idx < shuffled.length - 1) {
+            idx++;
+            renderCard();
+            syncMeta();
+          } else if (val && idx === shuffled.length - 1) {
+            showToast("Done!", "Last card selected. Submit is available if all are filled.");
+          }
+        });
+
+        clearThisBtn.addEventListener("click", () => {
+          delete selections[c.id];
+          renderCard({ animate:false });
+          syncMeta();
+          showToast("Cleared", "Selection removed for this card.");
+        });
+
+        submitBtnEl.addEventListener("click", async () => {
+          const name = (playerName.value || "").trim();
+          if (!name) { showToast("Name required", "Please enter your name for the leaderboard."); playerName.focus(); return; }
+          if (Object.keys(selections).length !== shuffled.length) { showToast("Incomplete", "Please select employees for all 17 cards."); return; }
+
+          const score = computeScore(); // NOT revealed
+          const answers = shuffled.map(card => ({ cardId: card.id, text: card.text, selected: selections[card.id] || "" }));
+
+          submitBtnEl.disabled = true;
+          submitBtnTextEl.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Submitting...`;
+
+          try {
+            await addDoc(collection(db, "gislenWomenDaySubmissions"), { name, score, answers, createdAt: serverTimestamp() });
+            showToast("Submitted!", "Leaderboard is loading. Results are not revealed.");
+            leaderModal.show();
+            await loadLeaderboard();
+          } catch (e) {
+            console.error(e);
+            showToast("Submit failed", "Check Firebase config / Firestore rules, then try again.");
+          } finally {
+            submitBtnEl.disabled = false;
+            submitBtnTextEl.innerHTML = `<i class="bi bi-send me-1"></i> Submit`;
+          }
+        });
+
+        // show submit if all selected
+        if (Object.keys(selections).length === shuffled.length) submitBtnEl.classList.remove("d-none");
+      };
+
+      if (!animate) return doRender();
+
+      cardHost.classList.remove("fade-swap-in");
+      cardHost.classList.add("fade-swap-out");
+      setTimeout(() => {
+        cardHost.classList.remove("fade-swap-out");
+        cardHost.classList.add("fade-swap-in");
+        doRender();
+      }, 170);
+    }
+
+    function syncMeta() {
+      const total = shuffled.length;
+      const selectedCount = Object.keys(selections).length;
+
+      cardIndexText.textContent = String(idx + 1);
+      selectedCountText.textContent = String(selectedCount);
+      progressBar.style.width = `${Math.round((selectedCount / total) * 100)}%`;
+
+      prevBtn.style.opacity = idx === 0 ? .5 : 1;
+      nextBtn.style.opacity = idx === total - 1 ? .5 : 1;
+
+      const statusTextEl = document.getElementById("statusText");
+      const submitBtnEl = document.getElementById("submitBtn");
+      if (statusTextEl) {
+        statusTextEl.textContent =
+          selectedCount === total
+            ? "All cards selected — you can submit now. (Results won’t be revealed.)"
+            : "Pick employees for all cards to enable Submit. (Results won’t be revealed.)";
+      }
+      if (submitBtnEl) {
+        if (selectedCount === total) submitBtnEl.classList.remove("d-none");
+        else submitBtnEl.classList.add("d-none");
+      }
+    }
+
+    // Nav
+    prevBtn.addEventListener("click", () => { if (idx<=0) return; idx--; renderCard(); syncMeta(); });
+    nextBtn.addEventListener("click", () => { if (idx>=shuffled.length-1) return; idx++; renderCard(); syncMeta(); });
+
+    viewLeaderboardBtnTop.addEventListener("click", async () => { leaderModal.show(); await loadLeaderboard(); });
+    refreshLbBtn.addEventListener("click", async () => { await loadLeaderboard(); });
+
+    // Leaderboard
+    async function loadLeaderboard() {
+      lbError.classList.add("d-none");
+      lbList.innerHTML = "";
+      lbLoading.classList.remove("d-none");
+
+      try {
+        const q = query(
+          collection(db, "gislenWomenDaySubmissions"),
+          orderBy("score", "desc"),
+          orderBy("createdAt", "asc"),
+          limit(25)
+        );
+
+        const snap = await getDocs(q);
+        lbLoading.classList.add("d-none");
+
+        if (snap.empty) {
+          lbList.innerHTML = `
+            <div class="leader-row">
+              <div class="fw-semibold">No submissions yet</div>
+              <div class="muted small">Be the first to submit!</div>
+            </div>
+          `;
+          return;
+        }
+
+        let rank = 0;
+        const SHOW_SCORE = true; // set false to hide score
+        snap.forEach(doc => {
+          rank++;
+          const d = doc.data();
+          const created = d.createdAt?.toDate ? d.createdAt.toDate() : null;
+
+          lbList.insertAdjacentHTML("beforeend", `
+            <div class="leader-row d-flex justify-content-between align-items-center gap-2">
+              <div class="d-flex align-items-center gap-2">
+                <div class="chip"><i class="bi bi-hash"></i> ${rank}</div>
+                <div>
+                  <div class="fw-semibold">${escapeHtml(d.name ?? "—")}</div>
+                  <div class="muted small">${created ? created.toLocaleString() : ""}</div>
+                </div>
+              </div>
+              <div class="chip"><i class="bi bi-award"></i> ${SHOW_SCORE ? (d.score ?? 0) : "Submitted"}</div>
+            </div>
+          `);
+        });
+      } catch (e) {
+        console.error(e);
+        lbLoading.classList.add("d-none");
+        lbError.classList.remove("d-none");
+      }
+    }
+
+    // Score (private)
+    function computeScore() {
+      let correct = 0;
+      for (const c of shuffled) {
+        if ((selections[c.id] || "") === c.correctName) correct++;
+      }
+      return correct;
+    }
+
+    // Toast
+    let toastTimer = null;
+    function showToast(title, msg) {
+      toastTitle.textContent = title;
+      toastMsg.textContent = msg;
+      toastWrap.style.display = "block";
+      toastWrap.style.opacity = "1";
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => hideToast(), 3200);
+    }
+    function hideToast() {
+      toastWrap.style.opacity = "0";
+      setTimeout(() => { toastWrap.style.display = "none"; }, 150);
+    }
+    toastClose.addEventListener("click", hideToast);
+
+    // Utils
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+    function escapeAttr(str) {
+      return String(str).replaceAll('"', "&quot;");
+    }
+
+    // Start
+    renderCard({ animate:false });
+    syncMeta();
+  </script>
+</body>
+</html>
