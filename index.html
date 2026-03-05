@@ -403,7 +403,7 @@
           </div>
 
           <div class="muted small mt-2" id="statusText">
-            Pick employees for all cards to enable Submit. (Results won’t be revealed.)
+            Pick employees for all cards to enable Submit.
           </div>
         `;
 
@@ -506,8 +506,8 @@
       if (statusTextEl) {
         statusTextEl.textContent =
           selectedCount === total
-            ? "All cards selected — you can submit now. (Results won’t be revealed.)"
-            : "Pick employees for all cards to enable Submit. (Results won’t be revealed.)";
+            ? "All cards selected — you can submit now."
+            : "Pick employees for all cards to enable Submit.";
       }
       if (submitBtnEl) {
         if (selectedCount === total) submitBtnEl.classList.remove("d-none");
